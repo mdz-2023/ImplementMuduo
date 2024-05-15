@@ -12,6 +12,7 @@ aux_source_directory(. SRC_LIST)
 # 编译生成动态库mymuduo
 # add_library(mymuduo SHARED ${SRC_LIST})
 add_executable(test ${SRC_LIST})
+target_link_libraries(test pthread)
 
 # add_subdirectory(example)
 include_directories(${PROJECT_SOURCE_DIR})

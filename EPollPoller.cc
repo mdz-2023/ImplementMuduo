@@ -1,8 +1,8 @@
 #include "EPollPoller.h"
-#include "logger.h"
+#include "LogStream.h"
 #include "EventLoop.h"
 #include "Channel.h"
-#include "timestamp.h"
+#include "Timestamp.h"
 #include <unistd.h>
 #include <string.h>
 #include <iostream>
@@ -18,10 +18,10 @@ EPollPoller::EPollPoller(EventLoop *loop)
       epollfd_(::epoll_create1(EPOLL_CLOEXEC)), // epoll_create1 与 epoll_create 不同. EPOLL_CLOEXEC 表示子进程不继承这个fd资源
       events_(kInitEventListSize)
 {
-    Logger::LOG_FATAL("epoll_create success:" + 101);
+    LOG_DEBUG << "epoll_create success:" << 101;
     if (epollfd_ < 0)
     {
-        Logger::LOG_FATAL("epoll_create error:");
+        LOG_DEBUG << "epoll_create error:";
     }
 }
 
@@ -34,22 +34,18 @@ EPollPoller::~EPollPoller()
 // 通过epoll_wait监听发生事件的fd，将发生事件的channel通过activeChannels地址传回给EventLoop
 Timestamp EPollPoller::poll(int timeoutMs, ChannelList *activeChannels)
 {
-    std::ostringstream oss;
-    oss << "fd total count " << channels_.size();
-    Logger::LOG_DEBUG(oss.str()); // 避免实际使用时info打印的过多
+    LOG_DEBUG << "fd total count " << channels_.size(); // 避免实际使用时info打印的过多
 
     // LT模式，未处理完的会持续上报
-    int numEvents = ::epoll_wait(epollfd_, // epollfd
-                                 &*events_.begin(), // 事件数组的起始地址：首元素的内存地址，准备存放发生的事件
+    int numEvents = ::epoll_wait(epollfd_,                         // epollfd
+                                 &*events_.begin(),                // 事件数组的起始地址：首元素的内存地址，准备存放发生的事件
                                  static_cast<int>(events_.size()), // C++类型安全的强转
                                  timeoutMs);
     int savedErrno = errno; // 记录全局的errno
     Timestamp now(Timestamp::now());
     if (numEvents > 0) // 发生事件的个数
     {
-        oss.str("");
-        // oss << numEvents << " events happened";
-        Logger::LOG_DEBUG(numEvents + " events happened");
+        LOG_DEBUG << numEvents + " events happened";
         fillActiveChannels(numEvents, activeChannels);
         if (numEvents == events_.size())
         {
@@ -58,7 +54,7 @@ Timestamp EPollPoller::poll(int timeoutMs, ChannelList *activeChannels)
     }
     else if (numEvents == 0)
     {
-        Logger::LOG_DEBUG("nothing happened");
+        LOG_DEBUG << "nothing happened";
     }
     else
     {
@@ -66,7 +62,7 @@ Timestamp EPollPoller::poll(int timeoutMs, ChannelList *activeChannels)
         if (savedErrno != EINTR) // != 外部中断
         {
             errno = savedErrno;
-            Logger::LOG_ERROR("EPollPoller::poll() err!");
+            LOG_ERROR << "EPollPoller::poll() err!";
         }
     }
     return now;
@@ -76,15 +72,13 @@ Timestamp EPollPoller::poll(int timeoutMs, ChannelList *activeChannels)
  *           EventLoop  =》 poller.poll
  *  ChannelList                          Poller
  * （channel不论是否注册）               ChannelMap<fd, channel*> （channel都注册过）
-*/
+ */
 // epoll_ctl    在poller中更新/修改/删除channel
 void EPollPoller::updateChannel(Channel *channel)
 {
     const int index = channel->index(); // 获取本channel的状态
-    std::ostringstream oss;
-    oss << "fd = " << channel->fd()
-        << " events = " << channel->events() << " index = " << index;
-    Logger::LOG_INFO(oss.str());
+    LOG_INFO << "fd = " << channel->fd()
+             << " events = " << channel->events() << " index = " << index;
 
     if (index == kNew || index == kDeleted)
     {
@@ -118,9 +112,7 @@ void EPollPoller::removeChannel(Channel *channel)
 {
     int fd = channel->fd();
     channels_.erase(fd); // 从map中删除
-    std::ostringstream oss;
-    oss << "fd = " << fd;
-    Logger::LOG_INFO(oss.str());
+    LOG_INFO << "fd = " << fd;
 
     int index = channel->index();
     if (index == kAdded)
@@ -150,24 +142,17 @@ void EPollPoller::update(int operation, Channel *channel)
     event.data.fd = fd;
     event.data.ptr = channel; // .data携带额外数据，ptr针对fd携带的数据
 
-    std::ostringstream oss;
-    oss << "epoll_ctl op = " << operation
-              << " fd = " << fd;
-    Logger::LOG_INFO(oss.str());
+    LOG_INFO << "epoll_ctl op = " << operation << " fd = " << fd;
 
     if (::epoll_ctl(epollfd_, operation, fd, &event) < 0) // 出错了
     {
         if (operation == EPOLL_CTL_DEL)
         {
-            oss.str("");
-            oss << "epoll_ctl op =" << operation << " fd =" << fd;
-            Logger::LOG_FATAL(oss.str());
+            LOG_FATAL << "epoll_ctl op =" << operation << " fd =" << fd;
         }
         else
         {
-            oss.str("");
-            oss << "epoll_ctl op =" << operation << " fd =" << fd;
-            Logger::LOG_FATAL(oss.str());
+            LOG_FATAL << "epoll_ctl op =" << operation << " fd =" << fd;
         }
     }
 }

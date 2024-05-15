@@ -1,5 +1,5 @@
 #include "Channel.h"
-#include "logger.h"
+#include "LogStream.h"
 #include <poll.h>
 
 const int Channel::kNoneEvent = 0;
@@ -44,7 +44,7 @@ void Channel::remove()
 
 void Channel::handleEvent(Timestamp receiveTime)
 {
-    Logger::LOG_INFO("channel handleEvent revents:" + receiveTime.now().toString());
+    LOG_INFO << "channel handleEvent revents:" << receiveTime.now().toString();
     if (tied_) // tie方法调用过？
     {
         std::shared_ptr<void> guard = tie_.lock(); // lock 将弱智能指针 提升为 强智能指针
