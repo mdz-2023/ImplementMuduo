@@ -2,7 +2,11 @@
 
 std::mutex LogStream::fileMutex;
 
-LogStream::LogStream(int logLevel) : logLevel_(logLevel) {}
+LogStream::LogStream(const int logLevel, const char *file, const int line, const char* func)
+    : logLevel_(logLevel)
+{
+    ssEnd_ << " FILE:" << file << " LINE:" << line << " FUNC:" << func;
+}
 
 // 在此处将ss_中所有内容写入文件
 LogStream::~LogStream()
@@ -36,7 +40,7 @@ LogStream::~LogStream()
         std::ofstream file(filePath, std::ios::app);
         if (file.is_open())
         {
-            file << output << time << " " << ss_.str() << std::endl;
+            file << output << time << " " << ss_.str() << ssEnd_.str() << std::endl;
             file.close();
         }
         else

@@ -25,7 +25,10 @@ enum LogLevel
 class LogStream
 {
 public:
-    LogStream(int logLevel);
+    LogStream(const int logLevel,
+                const char* file = __FILE__,   
+                const int line = __LINE__,
+                const char* func = __FUNCTION__);
 
     // 在此处将ss_中所有内容写入文件
     ~LogStream();
@@ -35,7 +38,8 @@ public:
     LogStream &operator<<(const T &value);
 
 private:
-    std::stringstream ss_; // 组合一个stringstream对象
+    std::stringstream ss_; // 通过重载<<接收用户的多种数据的log信息
+    std::stringstream ssEnd_; // 保存log发生的位置信息
     // 静态变量，全局只有一个，在多线程的多个实例化对象中也可保持线程安全
     static std::mutex fileMutex;
     int logLevel_;

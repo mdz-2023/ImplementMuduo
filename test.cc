@@ -1,9 +1,9 @@
-#include "logger.h"
 #include "Timestamp.h"
 #include "InetAddress.h"
 #include "Channel.h"
 #include "EPollPoller.h"
 #include "EventLoop.h"
+#include "LogStream.h"
 #include <thread>
 
 int main(){
@@ -22,18 +22,14 @@ int main(){
     // EPollPoller epoll(loop);
     // epoll.newDefaultPoller(loop);
 
-    // std::thread t1([](){
-    //     static int i = 0;
-    //     while(1)
-    //     {
-    //         LOG_DEBUG << "in thread1, i = " << i++;
-    //     }
-    //     while (1)
-    //     {
-    //         /* code */
-    //     }
-        
-    // });
+    std::thread t1([](){
+        static int i = 0;
+        while(i < 100)
+        {
+            LOG_INFO << "in thread1, i = " << i++;
+        }        
+    });
+    t1.join();
     // int i = 0;
     // while(1)
     // {

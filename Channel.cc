@@ -1,4 +1,5 @@
 #include "Channel.h"
+#include "EventLoop.h"
 #include "LogStream.h"
 #include <poll.h>
 
@@ -33,13 +34,13 @@ EventLoop 有 ChannelList 和 Poller
 void Channel::update()
 {
     // 通过Channel所属的EventLoop，调用poller的相应方法，注册fd的events事件
-    // loop_->updateChannel(this);
+    loop_->updateChannel(this);
 }
 
 // 在Channel所属的EventLoop中删除当前Channel
 void Channel::remove()
 {
-    // loop_->removeChannel(this);
+    loop_->removeChannel(this);
 }
 
 void Channel::handleEvent(Timestamp receiveTime)
