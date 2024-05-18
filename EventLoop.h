@@ -34,7 +34,7 @@ public:
 
     // 在当前loop执行cb
     void runInLoop(Functor cb);
-    // 把cb放入队列，唤醒loop所在的线程，执行cb
+    // 把cb放入队列，唤醒subloop所在的线程，执行cb
     void queueInLoop(Functor cb);
 
     size_t queueSize() const;

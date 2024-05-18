@@ -49,6 +49,7 @@ EventLoop::EventLoop()
     wakeupChannel_->setReadCallback(std::bind(&EventLoop::handleRead, this));
     // we are always reading the wakeupfd
     // 每一个EventLoop都将监听weakupChannel的EPOLLIN读事件了
+    // 作用是subloop在阻塞时能够被mainLoop通过weakupfd唤醒
     wakeupChannel_->enableReading();
 }
 

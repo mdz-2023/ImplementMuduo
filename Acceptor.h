@@ -1,7 +1,7 @@
 #pragma once
 
 #include "noncopyable.h"
-#include "Sokect.h"
+#include "Socket.h"
 #include "Channel.h"
 
 #include <functional>
@@ -30,7 +30,7 @@ private:
     void handleRead();
 
     EventLoop *loop_; // Acceptor用的就是用户定义的那个baseloop，也即mainLoop
-    Sokect acceptSocket_;
+    Socket acceptSocket_;
     Channel acceptChannel_;
     NewConnectionCallback newConnectionCallback_;
     bool listenning_;
