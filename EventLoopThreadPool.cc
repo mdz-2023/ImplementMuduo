@@ -34,11 +34,12 @@ void EventLoopThreadPool::start(const ThreadInitCallback &cb)
 
 EventLoop *EventLoopThreadPool::getNextLoop()
 {
+    LOG_DEBUG <<"EventLoopThreadPool::getNextLoop()  loops_.size()=" << loops_.size();
     EventLoop *loop = baseLoop_;
     if(!loops_.empty()){
         loop = loops_[next_];
         ++next_;
-        if(next_ > loops_.size()){
+        if(next_ >= loops_.size()){
             next_ = 0;
         }
     }

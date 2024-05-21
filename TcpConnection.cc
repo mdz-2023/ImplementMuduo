@@ -12,7 +12,7 @@ static EventLoop *checkLoopNotNull(EventLoop *loop)
 {
     if (loop == nullptr)
     {
-        LOG_FATAL << "mainLoop is null!";
+        LOG_FATAL << "subLoop is null!";
     }
     return loop;
 }

@@ -20,8 +20,14 @@ enum LogLevel
 #define LOG_ERROR LogStream(ERROR, __FILE__, __LINE__, __FUNCTION__)
 // 直接使用左移运算法<<进行输出，末尾不需要加换行
 #define LOG_FATAL LogStream(FATAL, __FILE__, __LINE__, __FUNCTION__)
+
+#ifdef DEBUG_LOGGING_ENABLED
 // 直接使用左移运算法<<进行输出，末尾不需要加换行
 #define LOG_DEBUG LogStream(DEBUG, __FILE__, __LINE__, __FUNCTION__)
+#else
+#define LOG_DEBUG if(false) LogStream(DEBUG, __FILE__, __LINE__, __FUNCTION__)
+#endif
+
 
 // 每个LogStream对象都是一行Log日志
 // 在对象析构的时候存入文件
