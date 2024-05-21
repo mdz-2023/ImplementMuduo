@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <iostream>
 
 // 防止一个线程创建多个EventLoop    threadLocal
 __thread EventLoop *t_loopInThisThread = nullptr;
@@ -82,13 +83,16 @@ void EventLoop::loop()
     while (!quit_)
     {
         activeChannels_.clear();
-        // 当前EventLoop的Poll，监听两类fd，client的fd（正常通信的）和 weakupfd（mainLoop 和 subLoop 通信用来唤醒sub的）
+        LOG_DEBUG;
+        // 当前EventLoop的Poll，监听两类fd，client的fd（正常通信的，在baseloop中）和 weakupfd（mainLoop 和 subLoop 通信用来唤醒sub的）
         pollReturnTime_ = poller_->poll(kPollTimeMs, &activeChannels_);
+        LOG_DEBUG;
         for (Channel *channel : activeChannels_)
         {
             // Poller监听哪些channel发生事件了，然后上报给EventLoop，通知channel处理相应的事件
             channel->handleEvent(pollReturnTime_);
         }
+        LOG_DEBUG;
         // 执行当前EventLoop事件循环需要处理的回调操作
         /**
          * IO线程 mainLoop 只 accept 然后返回client通信用的fd <= 用channel打包 并分发给 subloop
@@ -96,6 +100,7 @@ void EventLoop::loop()
          * 执行下面的方法，执行之前mainLoop注册的cb操作（一个或多个）
          */
         doPendingFunctors();
+        LOG_DEBUG;
     }
 
     LOG_INFO << "EventLoop " << this << " stop looping";
@@ -126,12 +131,15 @@ void EventLoop::quit()
 
 void EventLoop::runInLoop(Functor cb)
 {
-    if (isInLoopThread())
+    // LOG_DEBUG<<"EventLoop::runInLoop  cb:" << (cb != 0);
+    if (isInLoopThread()) // 产生段错误
     { // 在当前loop线程中 执行cb
+        LOG_DEBUG << "在当前loop线程中 执行cb";
         cb();
     }
     else
     { // 在其他loop线程执行cb，需要唤醒其loop所在线程，执行cb
+        LOG_DEBUG << "在其他loop线程执行cb，需要唤醒其loop所在线程，执行cb";
         queueInLoop(cb);
     }
 }

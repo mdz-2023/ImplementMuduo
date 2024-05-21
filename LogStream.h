@@ -14,10 +14,14 @@ enum LogLevel
     DEBUG, // 调试信息
 };
 
-#define LOG_INFO LogStream(INFO)
-#define LOG_ERROR LogStream(ERROR)
-#define LOG_FATAL LogStream(FATAL)
-#define LOG_DEBUG LogStream(DEBUG)
+// 直接使用左移运算法<<进行输出，末尾不需要加换行
+#define LOG_INFO LogStream(INFO, __FILE__, __LINE__, __FUNCTION__)
+// 直接使用左移运算法<<进行输出，末尾不需要加换行
+#define LOG_ERROR LogStream(ERROR, __FILE__, __LINE__, __FUNCTION__)
+// 直接使用左移运算法<<进行输出，末尾不需要加换行
+#define LOG_FATAL LogStream(FATAL, __FILE__, __LINE__, __FUNCTION__)
+// 直接使用左移运算法<<进行输出，末尾不需要加换行
+#define LOG_DEBUG LogStream(DEBUG, __FILE__, __LINE__, __FUNCTION__)
 
 // 每个LogStream对象都是一行Log日志
 // 在对象析构的时候存入文件

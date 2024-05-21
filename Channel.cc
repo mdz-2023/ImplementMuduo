@@ -21,10 +21,14 @@ Channel::~Channel()
 {
 }
 
+// 在一个TcpConnection新连接建立的时候调用
+// TcpConnection 含有一个 Channel，在Channel中保留对其上层对象的指针，
+// 防止TcpConnection被用户析构后，本类回调其回调函数
 void Channel::tie(const std::shared_ptr<void> &obj)
 {
     tie_ = obj; //
     tied_ = true;
+    LOG_DEBUG << "Channel::tie() tied_ = true";
 }
 
 /*
@@ -45,8 +49,8 @@ void Channel::remove()
 
 void Channel::handleEvent(Timestamp receiveTime)
 {
-    LOG_INFO << "channel handleEvent revents:" << receiveTime.now().toString();
-    if (tied_) // tie方法调用过？
+    LOG_INFO << "channel handleEvent revents:" << revents_ << "  " << receiveTime.now().toString();
+    if (tied_) // 上层TcpConnection对象还在
     {
         std::shared_ptr<void> guard = tie_.lock(); // lock 将弱智能指针 提升为 强智能指针
         if (guard)                                 // 是否存活
@@ -63,6 +67,7 @@ void Channel::handleEvent(Timestamp receiveTime)
 // 根据poller通知的Channel发生的具体事件，由Channel负责调用具体的回调操作
 void Channel::handleEventWithGuard(Timestamp receiveTime)
 {
+    LOG_INFO << "channel handleEventWithGuard revents:" << revents_ << "  " << receiveTime.now().toString();
     if ((revents_ & POLLHUP) && !(revents_ & POLLIN))
     {
         if (closeCallback_)

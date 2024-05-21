@@ -1,6 +1,7 @@
 #pragma once
 #include "noncopyable.h"
 #include "Timestamp.h"
+#include "LogStream.h"
 #include <functional>
 #include <memory>
 
@@ -12,7 +13,6 @@ class EventLoop;
 Channel 理解为通道，封装了socketfd和其他感兴趣的event，如EPOLLIN、EPOLLOUT等
 还绑定了poller返回的具体事件
 */
-
 class Channel : noncopyable
 {
 public:

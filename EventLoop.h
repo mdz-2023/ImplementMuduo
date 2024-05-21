@@ -2,12 +2,14 @@
 #include "noncopyable.h"
 #include "Timestamp.h"
 #include "CurrentThread.h"
+#include "LogStream.h"
 
 #include <functional>
 #include <vector>
 #include <atomic>
 #include <memory>
 #include <mutex>
+#include <sys/types.h>
 
 class Channel;
 class Poller;
@@ -49,7 +51,9 @@ public:
     bool hasChannel(Channel *channel);
 
     // 判断EventLoop对象是否在自己的线程中
-    bool isInLoopThread() const { return threadId_ == CurrentThread::tid(); }
+    bool isInLoopThread() const {
+        return threadId_ == CurrentThread::tid();
+    }
 
 private:
     // waked up后的一个操作 

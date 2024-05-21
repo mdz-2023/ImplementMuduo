@@ -5,7 +5,7 @@ std::mutex LogStream::fileMutex;
 LogStream::LogStream(const int logLevel, const char *file, const int line, const char* func)
     : logLevel_(logLevel)
 {
-    ssEnd_ << " FILE:" << file << " LINE:" << line << " FUNC:" << func;
+    ssEnd_ << " --FILE:" << file << " LINE:" << line << " FUNC:" << func;
 }
 
 // 在此处将ss_中所有内容写入文件

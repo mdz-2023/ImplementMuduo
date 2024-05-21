@@ -22,6 +22,7 @@ void Socket::bindAddress(const InetAddress &localaddr)
 
 void Socket::listen()
 {
+    LOG_DEBUG << "Socket::listen()";
     // 定义了一个 “等待连接队列” 的最大长度为1024
     // 队列用于存储那些已经到达服务器但尚未被 accept() 系统调用处理的连接请求
     if (0 != ::listen(sockfd_, 1024))
@@ -32,15 +33,22 @@ void Socket::listen()
 
 int Socket::accept(InetAddress *peeraddr)
 {
+    /**
+     * 1. accept函数的参数不合法
+     * 2. 对返回的connfd没有设置非阻塞
+     * Reactor模型：one loop per thread
+     * poller + non-blocking IO
+    */
+    LOG_DEBUG << "Socket::accept(InetAddress *peeraddr) : " << peeraddr->toIpPort();
     sockaddr_in addr;
-    socklen_t len;
+    socklen_t len = sizeof addr;
     memset(&addr, 0, sizeof addr);
-    int connfd = ::accept(sockfd_, (sockaddr *)&addr, &len);
+    int connfd = ::accept4(sockfd_, (sockaddr *)&addr, &len, SOCK_NONBLOCK | SOCK_CLOEXEC);
     if (connfd >= 0)
     {
         peeraddr->setSockAddrInet(addr);
     }
-    return 0;
+    return connfd;
 }
 
 void Socket::shutdownWrite()

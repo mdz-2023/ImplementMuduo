@@ -18,7 +18,6 @@ EPollPoller::EPollPoller(EventLoop *loop)
       epollfd_(::epoll_create1(EPOLL_CLOEXEC)), // epoll_create1 与 epoll_create 不同. EPOLL_CLOEXEC 表示子进程不继承这个fd资源
       events_(kInitEventListSize)
 {
-    LOG_DEBUG << "epoll_create success:" << 101;
     if (epollfd_ < 0)
     {
         LOG_DEBUG << "epoll_create error:";
@@ -45,7 +44,7 @@ Timestamp EPollPoller::poll(int timeoutMs, ChannelList *activeChannels)
     Timestamp now(Timestamp::now());
     if (numEvents > 0) // 发生事件的个数
     {
-        LOG_DEBUG << numEvents + " events happened";
+        LOG_DEBUG << numEvents << " events happened";
         fillActiveChannels(numEvents, activeChannels);
         if (numEvents == events_.size())
         {
@@ -105,6 +104,7 @@ void EPollPoller::updateChannel(Channel *channel)
             update(EPOLL_CTL_MOD, channel);
         }
     }
+    // LOG_DEBUG << "end";
 }
 
 // epoll_ctl    从poller中删除channel
@@ -142,7 +142,6 @@ void EPollPoller::update(int operation, Channel *channel)
     event.data.fd = fd;
     event.data.ptr = channel; // .data携带额外数据，ptr针对fd携带的数据
 
-    LOG_INFO << "epoll_ctl op = " << operation << " fd = " << fd;
 
     if (::epoll_ctl(epollfd_, operation, fd, &event) < 0) // 出错了
     {
@@ -155,4 +154,5 @@ void EPollPoller::update(int operation, Channel *channel)
             LOG_FATAL << "epoll_ctl op =" << operation << " fd =" << fd;
         }
     }
+    LOG_INFO << "epoll_ctl op = " << operation << " fd = " << fd << "  success!";
 }

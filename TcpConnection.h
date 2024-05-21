@@ -18,6 +18,7 @@ class Socket;
 /**
  * TcpServer => Acceptor => 有一个新用户连接，通过accept函数拿到connfd
  * => TcpConnetion 设置回调 => Channel => Poller => Channel的回调操作
+ * 专门描述一个已建立连接的相应信息 
 */
 class TcpConnection: noncopyable,
                       public std::enable_shared_from_this<TcpConnection> // 运行本类的对象产生智能指针
@@ -40,8 +41,8 @@ public:
     std::string getTcpInfoString() const;
 
 
-    // 发送数据
-    void send(const void* message, int len);
+    // 用户调用，给客户端发送数据
+    void send(const std::string& message);
     // 关闭连接
     void shutdown();
 
@@ -61,12 +62,15 @@ public:
     { closeCallback_ = cb; }
 
     // called when TcpServer accepts a new connection
+    // 连接建立
     void connectEstablished();   // should be called only once
     // called when TcpServer has removed me from its map
+    // 连接销毁
     void connectDestroyed();  // should be called only once
 
 private:
-    enum StateE { kDisconnected, kConnecting, kConnected, kDisconnecting };
+    //            初始化       建立连接    调用shutdown      关闭完底层soket
+    enum StateE { kConnecting, kConnected, kDisconnecting,  kDisconnected};
 
     void handleRead(Timestamp receiveTime);
     void handleWrite();
@@ -74,8 +78,7 @@ private:
     void handleError();
     void sendInLoop(const void* message, size_t len);
     void shutdownInLoop();
-    // void forceCloseInLoop();
-    // void setState(StateE s) { state_ = s; }
+    
     const char* stateToString() const;
     // void startReadInLoop();
     // void stopReadInLoop();
@@ -98,12 +101,12 @@ private:
     MessageCallback messageCallback_;
     WriteCompleteCallback writeCompleteCallback_;
     HighWaterMarkCallback highWaterMarkCallback_;
-    CloseCallback closeCallback_;
+    CloseCallback closeCallback_; // 来自TcpServer的回调，用于在Server中删除本conn
 
-    size_t highWaterMark_;
+    size_t highWaterMark_; // 防止本端发送过快对面接收不及
 
-    Buffer inputBuffer_;
-    Buffer outputBuffer_; // FIXME: use list<Buffer> as output buffer.
+    Buffer inputBuffer_; // 接收数据的缓冲区
+    Buffer outputBuffer_; // 发送数据的缓冲区
 };
 
 

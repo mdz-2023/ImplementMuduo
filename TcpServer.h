@@ -7,6 +7,9 @@
 #include "Acceptor.h"
 #include "Callbacks.h"
 #include "InetAddress.h"
+#include "Buffer.h"
+#include "Timestamp.h"
+#include "TcpConnection.h"
 
 #include <functional>
 #include <string>

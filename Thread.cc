@@ -33,9 +33,11 @@ void Thread::start()
     // 开启线程
     pthread_ = std::make_shared<std::thread>([&](){
         // 获取线程的tid值
-        tid_ = tid();
+        tid_ = CurrentThread::tid();
         //信号量+1
         sem_post(&sem);
+        // 开启一个新线程，专门执行该线程函数
+        func_(); 
     });
 
     // 等待tid_有值
